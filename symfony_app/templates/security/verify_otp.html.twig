@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Verify OTP{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h4>Enter OTP Code</h4>
+                </div>
+                <div class="card-body">
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+                    {% for message in app.flashes('danger') %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
+                    
+                    <p>An OTP code was simulated for <strong>{{ email }}</strong>.</p>
+                    
+                    <form method="post">
+                        <label for="otp">6-Digit OTP</label>
+                        <input type="text" name="otp" id="otp" class="form-control mb-3 text-center fs-4 font-monospace" maxlength="6" required autofocus autocomplete="off">
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning">Verify Code</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

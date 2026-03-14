@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stock Adjustments{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Stock Adjustments</h1>
+        <a href="{{ path('app_adjustment_new') }}" class="btn btn-primary">Make Adjustment</a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Warehouse</th>
+                <th>Product</th>
+                <th>Old Qty</th>
+                <th>New Qty</th>
+                <th>Difference</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for adjustment in adjustments %}
+            <tr>
+                <td>{{ adjustment.id }}</td>
+                <td>{{ adjustment.createdAt|date('Y-m-d H:i') }}</td>
+                <td>{{ adjustment.warehouse.name }}</td>
+                <td>{{ adjustment.product.name }}</td>
+                <td>{{ adjustment.oldQuantity }}</td>
+                <td><strong>{{ adjustment.newQuantity }}</strong></td>
+                <td>
+                    {% if adjustment.difference > 0 %}
+                        <span class="text-success">+{{ adjustment.difference }}</span>
+                    {% elseif adjustment.difference < 0 %}
+                        <span class="text-danger">{{ adjustment.difference }}</span>
+                    {% else %}
+                        0
+                    {% endif %}
+                </td>
+                <td>{{ adjustment.reason }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="8" class="text-center py-3">No adjustments found.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

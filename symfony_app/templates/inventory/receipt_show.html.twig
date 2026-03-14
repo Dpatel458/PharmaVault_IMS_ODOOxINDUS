@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Receipt #{{ receipt.id }}{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Receipt #{{ receipt.id }}</h1>
+        <div>
+            {% if receipt.status == 'draft' %}
+                <form action="{{ path('app_receipt_validate', {'id': receipt.id}) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to validate this receipt? This will update stock levels.');">Validate Receipt</button>
+                </form>
+            {% else %}
+                <span class="badge bg-success fs-5">Validated</span>
+            {% endif %}
+            <a href="{{ path('app_receipt_index') }}" class="btn btn-secondary ms-2">Back</a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light"><strong>Details</strong></div>
+                <div class="card-body">
+                    <p><strong>Supplier:</strong> {{ receipt.supplier }}</p>
+                    <p><strong>Date:</strong> {{ receipt.createdAt|date('Y-m-d H:i') }}</p>
+                    <p><strong>Status:</strong> {{ receipt.status|capitalize }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <strong>Items Received</strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>SKU</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in receipt.items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td><span class="badge bg-secondary">{{ item.product.sku }}</span></td>
+                                    <td>{{ item.quantity }} {{ item.product.unit }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-3 text-muted">No items added yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if receipt.status == 'draft' %}
+                <div class="card-footer bg-white">
+                    <form action="{{ path('app_receipt_add_item', {'id': receipt.id}) }}" method="POST" class="row g-2 align-items-center">
+                        <div class="col-auto flex-grow-1">
+                            <select name="product_id" class="form-select w-100" required>
+                                <option value="">Select a product...</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}">{{ product.sku }} - {{ product.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <input type="number" name="quantity" class="form-control" placeholder="Qty" min="1" required style="width: 100px;">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Add Row</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
