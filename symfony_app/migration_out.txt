@@ -1,0 +1,13 @@
+
+In MetadataStorageError.php line 13:
+                      
+  The metadata stora  
+  ge is not up to da  
+  te, please run the  
+   sync-metadata-sto  
+  rage command to fi  
+  x this issue.       
+                      
+
+make:migration [--formatted] [--nowdoc] [--configuration [CONFIGURATION]]
+

@@ -7,14 +7,26 @@
         <h1 class="h2">Edit Warehouse</h1>
     </div>
 
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-4" style="max-width: 700px;">
         <div class="card-body">
             {{ form_start(form) }}
-                {{ form_widget(form) }}
-                <button class="btn btn-primary mt-3">Update</button>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        {{ form_row(form.name) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_row(form.shortCode) }}
+                    </div>
+                    <div class="col-12">
+                        {{ form_row(form.address) }}
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button class="btn btn-primary px-4">Update Warehouse</button>
+                    <a href="{{ path('app_warehouse_index') }}" class="btn btn-secondary ms-2">Back to list</a>
+                </div>
             {{ form_end(form) }}
         </div>
     </div>
-
-    <a href="{{ path('app_warehouse_index') }}" class="btn btn-secondary">back to list</a>
 {% endblock %}

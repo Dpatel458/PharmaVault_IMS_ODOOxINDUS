@@ -1,0 +1,257 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Move History{% endblock %}
+
+{% block body %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="pt-3 pb-2 mb-3 border-bottom d-flex justify-content-between align-items-center">
+    <ol class="breadcrumb mb-0 h5">
+        <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+        <li class="breadcrumb-item">Operations</li>
+        <li class="breadcrumb-item">Products</li>
+        <li class="breadcrumb-item active" aria-current="page">Move History</li>
+    </ol>
+    <a href="#" class="btn btn-sm btn-outline-secondary"><i class="bi bi-gear"></i> Settings</a>
+</nav>
+
+<!-- Context Bar -->
+<div class="row mb-3 align-items-center">
+    <div class="col-md-3">
+        <button class="btn btn-primary px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#newMoveModal">NEW</button>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by Reference, Contact, Product...">
+        </div>
+    </div>
+
+    <div class="col-md-3 text-end text-nowrap">
+        <div class="btn-group shadow-sm" role="group">
+            <button type="button" class="btn btn-outline-secondary active" id="btnListView" title="List View">
+                <i class="bi bi-list-task"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="btnKanbanView" title="Kanban View">
+                <i class="bi bi-kanban"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-2 d-flex gap-2 bg-light">
+        <select class="form-select form-select-sm w-auto" id="filterType">
+            <option value="">All Movement Types</option>
+            <option value="inbound">Inbound (To WH)</option>
+            <option value="outbound">Outbound (From WH)</option>
+            <option value="internal">Internal Transfer</option>
+        </select>
+        
+        <select class="form-select form-select-sm w-auto" id="filterWarehouse">
+            <option value="">All Warehouses</option>
+            {% for w in warehouses %}
+                <option value="{{ w.id }}">{{ w.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select class="form-select form-select-sm w-auto" id="filterProduct">
+            <option value="">All Products</option>
+            {% for p in products %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<!-- Loader -->
+<div id="loader" class="text-center py-5 d-none">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- List View -->
+<div id="listViewContainer" class="table-responsive bg-white rounded shadow-sm">
+    <table class="table table-hover table-striped align-middle mb-0">
+        <thead class="table-dark">
+            <tr>
+                <th>Reference</th>
+                <th>Date</th>
+                <th>Product</th>
+                <th>Contact</th>
+                <th>From Location</th>
+                <th>To Location</th>
+                <th>Quantity</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="moveTableBody">
+            <!-- Data populated via AJAX -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Kanban View -->
+<div id="kanbanViewContainer" class="d-none" style="overflow-x: auto;">
+    <div class="d-flex gap-3 pb-2" style="min-width: max-content;">
+        
+        {% set statuses = ['Draft', 'Waiting', 'Ready', 'Done', 'Cancelled'] %}
+        {% for st in statuses %}
+            <div class="card bg-light shadow-sm" style="width: 300px; min-height: 400px;">
+                <div class="card-header fw-bold text-center border-bottom-0">
+                    {{ st }}
+                    <span class="badge bg-secondary rounded-pill float-end" id="kanban-cnt-{{ st|lower }}">0</span>
+                </div>
+                <div class="card-body p-2 d-flex flex-column gap-2" id="kanban-col-{{ st|lower }}">
+                    <!-- Cards injected via AJAX -->
+                </div>
+            </div>
+        {% endfor %}
+        
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    const ui = {
+        btnList: document.getElementById('btnListView'),
+        btnKanban: document.getElementById('btnKanbanView'),
+        listView: document.getElementById('listViewContainer'),
+        kanbanView: document.getElementById('kanbanViewContainer'),
+        tbody: document.getElementById('moveTableBody'),
+        searchInput: document.getElementById('searchInput'),
+        filterType: document.getElementById('filterType'),
+        filterWarehouse: document.getElementById('filterWarehouse'),
+        filterProduct: document.getElementById('filterProduct'),
+        loader: document.getElementById('loader')
+    };
+
+    // View Toggles
+    ui.btnList.addEventListener('click', () => {
+        ui.btnList.classList.add('active');
+        ui.btnKanban.classList.remove('active');
+        ui.listView.classList.remove('d-none');
+        ui.kanbanView.classList.add('d-none');
+    });
+
+    ui.btnKanban.addEventListener('click', () => {
+        ui.btnKanban.classList.add('active');
+        ui.btnList.classList.remove('active');
+        ui.kanbanView.classList.remove('d-none');
+        ui.listView.classList.add('d-none');
+    });
+
+    // Filtering logic
+    const fetchData = async () => {
+        ui.listView.style.opacity = '0.5';
+        ui.kanbanView.style.opacity = '0.5';
+        
+        const params = new URLSearchParams({
+            search: ui.searchInput.value,
+            type: ui.filterType.value,
+            warehouse: ui.filterWarehouse.value,
+            product: ui.filterProduct.value
+        });
+
+        const url = "{{ path('api_move_history_filter') }}?" + params.toString();
+        
+        try {
+            const resp = await fetch(url);
+            const data = await resp.json();
+            renderList(data);
+            renderKanban(data);
+        } catch(e) {
+            console.error("Failed to fetch move data", e);
+        } finally {
+            ui.listView.style.opacity = '1';
+            ui.kanbanView.style.opacity = '1';
+        }
+    };
+
+    const renderList = (data) => {
+        ui.tbody.innerHTML = '';
+        if (data.length === 0) {
+            ui.tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No records found.</td></tr>';
+            return;
+        }
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="fw-bold">${item.reference}</td>
+                <td>${item.date}</td>
+                <td>${item.product}</td>
+                <td>${item.contact}</td>
+                <td class="${item.colorClass}">${item.from}</td>
+                <td class="${item.colorClass}">${item.to}</td>
+                <td class="${item.colorClass}">${item.quantity}</td>
+                <td><span class="badge ${item.statusColor}">${item.status}</span></td>
+            `;
+            ui.tbody.appendChild(tr);
+        });
+    };
+
+    const renderKanban = (data) => {
+        // Clear all columns
+        const statuses = ['draft', 'waiting', 'ready', 'done', 'cancelled'];
+        statuses.forEach(s => {
+            document.getElementById('kanban-col-' + s).innerHTML = '';
+            document.getElementById('kanban-cnt-' + s).innerText = '0';
+        });
+
+        let counts = {draft: 0, waiting: 0, ready: 0, done: 0, cancelled: 0};
+
+        data.forEach(item => {
+            const st = item.status.toLowerCase();
+            const col = document.getElementById('kanban-col-' + st);
+            
+            if (col) {
+                counts[st]++;
+                const card = document.createElement('div');
+                card.className = "card border bg-white shadow-sm";
+                card.innerHTML = `
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <strong class="text-primary">${item.reference}</strong>
+                            <small class="text-muted">${item.date}</small>
+                        </div>
+                        <div class="mb-1 text-truncate" title="${item.product}">
+                            <i class="bi bi-box"></i> ${item.product}
+                        </div>
+                        <div class="d-flex justify-content-between text-muted" style="font-size: 0.85rem;">
+                            <span class="${item.colorClass}"><i class="bi bi-geo-alt"></i> ${item.from} &rarr; ${item.to}</span>
+                            <strong class="${item.colorClass}">${item.quantity} Units</strong>
+                        </div>
+                    </div>
+                `;
+                col.appendChild(card);
+            }
+        });
+
+        statuses.forEach(s => {
+            document.getElementById('kanban-cnt-' + s).innerText = counts[s];
+        });
+    };
+
+    // Event listeners
+    let timeout = null;
+    ui.searchInput.addEventListener('input', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(fetchData, 400); // debounce
+    });
+    
+    ui.filterType.addEventListener('change', fetchData);
+    ui.filterWarehouse.addEventListener('change', fetchData);
+    ui.filterProduct.addEventListener('change', fetchData);
+
+    // Initial load
+    fetchData();
+});
+</script>
+{% endblock %}

@@ -10,6 +10,8 @@ use App\Entity\StockAdjustment;
 use App\Entity\StockLedger;
 use App\Entity\Transfer;
 use App\Entity\Warehouse;
+use App\Entity\StockMove;
+use App\Entity\StockMoveItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
@@ -26,6 +28,12 @@ class StockMovementService
     {
         $this->em->beginTransaction();
         try {
+            $move = new StockMove();
+            $move->setReference('WH/IN/' . str_pad($receipt->getId() ?? 0, 4, '0', STR_PAD_LEFT));
+            $move->setContact($receipt->getSupplier());
+            $move->setFromLocation('Vendor');
+            $move->setStatus('done');
+
             foreach ($receipt->getItems() as $item) {
                 // Determine warehouse? A receipt normally targets a specific warehouse. 
                 // For simplicity, let's assume all receipts go to a default Warehouse, or we could add a field.
@@ -33,7 +41,16 @@ class StockMovementService
                 $warehouse = $this->em->getRepository(Warehouse::class)->findOneBy([]) ?? throw new Exception("No warehouses exist!");
                 
                 $this->addStock($item->getProduct(), $warehouse, $item->getQuantity(), 'receipt', $receipt->getId());
+
+                $move->setToLocation($warehouse->getName());
+                
+                $moveItem = new StockMoveItem();
+                $moveItem->setProduct($item->getProduct());
+                $moveItem->setQuantity($item->getQuantity());
+                $move->addItem($moveItem);
             }
+
+            $this->em->persist($move);
 
             $receipt->setStatus('done');
             $this->em->flush();
@@ -48,10 +65,25 @@ class StockMovementService
     {
         $this->em->beginTransaction();
         try {
+            $move = new StockMove();
+            $move->setReference('WH/OUT/' . str_pad($delivery->getId() ?? 0, 4, '0', STR_PAD_LEFT));
+            $move->setContact($delivery->getCustomer());
+            $move->setToLocation('Customer');
+            $move->setStatus('done');
+
             foreach ($delivery->getItems() as $item) {
                 $warehouse = $this->em->getRepository(Warehouse::class)->findOneBy([]) ?? throw new Exception("No warehouses exist!");
                 $this->deductStock($item->getProduct(), $warehouse, $item->getQuantity(), 'delivery', $delivery->getId());
+
+                $move->setFromLocation($warehouse->getName());
+                
+                $moveItem = new StockMoveItem();
+                $moveItem->setProduct($item->getProduct());
+                $moveItem->setQuantity($item->getQuantity());
+                $move->addItem($moveItem);
             }
+
+            $this->em->persist($move);
 
             $delivery->setStatus('done');
             $this->em->flush();
@@ -66,10 +98,24 @@ class StockMovementService
     {
         $this->em->beginTransaction();
         try {
+            $move = new StockMove();
+            $move->setReference('WH/INT/' . str_pad($transfer->getId() ?? 0, 4, '0', STR_PAD_LEFT));
+            $move->setContact('Internal');
+            $move->setFromLocation($transfer->getSourceLocation()->getName());
+            $move->setToLocation($transfer->getDestinationLocation()->getName());
+            $move->setStatus('done');
+
             foreach ($transfer->getItems() as $item) {
                 $this->deductStock($item->getProduct(), $transfer->getSourceLocation(), $item->getQuantity(), 'transfer_out', $transfer->getId());
                 $this->addStock($item->getProduct(), $transfer->getDestinationLocation(), $item->getQuantity(), 'transfer_in', $transfer->getId());
+
+                $moveItem = new StockMoveItem();
+                $moveItem->setProduct($item->getProduct());
+                $moveItem->setQuantity($item->getQuantity());
+                $move->addItem($moveItem);
             }
+
+            $this->em->persist($move);
 
             $transfer->setStatus('done');
             $this->em->flush();
@@ -87,10 +133,28 @@ class StockMovementService
             $diff = $adjustment->getNewQuantity() - $adjustment->getOldQuantity();
             $adjustment->setDifference($diff);
 
+            $move = new StockMove();
+            $move->setReference('WH/ADJ/' . str_pad($adjustment->getId() ?? rand(1000,9999), 4, '0', STR_PAD_LEFT));
+            $move->setContact('Inventory Audit');
+            $move->setStatus('done');
+
             if ($diff > 0) {
                 $this->addStock($adjustment->getProduct(), $adjustment->getWarehouse(), abs($diff), 'adjustment_add', $adjustment->getId());
+                $move->setFromLocation('Inventory Adjustments');
+                $move->setToLocation($adjustment->getWarehouse()->getName());
             } elseif ($diff < 0) {
                 $this->deductStock($adjustment->getProduct(), $adjustment->getWarehouse(), abs($diff), 'adjustment_sub', $adjustment->getId());
+                $move->setFromLocation($adjustment->getWarehouse()->getName());
+                $move->setToLocation('Inventory Loss');
+            }
+
+            if ($diff !== 0) {
+                $moveItem = new StockMoveItem();
+                $moveItem->setProduct($adjustment->getProduct());
+                $moveItem->setQuantity(abs($diff));
+                $move->addItem($moveItem);
+                
+                $this->em->persist($move);
             }
 
             $this->em->persist($adjustment);
