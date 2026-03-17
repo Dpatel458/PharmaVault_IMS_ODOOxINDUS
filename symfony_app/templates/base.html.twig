@@ -18,6 +18,29 @@
             .main-content { margin-left: 16.66667%; padding-top: 60px; }
             .navbar-brand { padding-top: .75rem; padding-bottom: .75rem; font-size: 1.2rem; background-color: rgba(0, 0, 0, .25); box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25); }
             .submenu { list-style: none; padding-left: 35px; background: rgba(0,0,0,0.1); }
+            
+            /* Custom Modern Form Styles */
+            .form-control, .form-select {
+                padding: 0.75rem 1rem;
+                border-radius: 0.5rem;
+                border: 1px solid #ced4da;
+                transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            }
+            .form-control:focus, .form-select:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            }
+            .card {
+                border-radius: 0.75rem;
+                border: none;
+                box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            }
+            .card-header {
+                border-bottom: 1px solid rgba(0,0,0,.125);
+                background-color: transparent;
+                padding: 1.25rem 1.5rem;
+            }
+            .card-body { padding: 1.5rem; }
             {% block stylesheets %}{% endblock %}
         </style>
     </head>
@@ -26,10 +49,23 @@
             <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="{{ path('app_dashboard') }}">
                 <i class="bi bi-box-seam me-2"></i>IMS Pro
             </a>
+            
+            {% if app.user %}
+            <form class="w-100 px-3 d-none d-md-flex" style="max-width: 500px;" action="/search" method="GET">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark text-secondary border-secondary"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control bg-dark text-white border-secondary" placeholder="Search for products, categories, warehouses..." aria-label="Search">
+                </div>
+            </form>
+            {% else %}
+            <div class="w-100"></div> {# Empty div to keep flex alignment #}
+            {% endif %}
             <div class="navbar-nav">
                 <div class="nav-item text-nowrap d-flex align-items-center">
                     {% if app.user %}
-                        <span class="text-white me-3">Welcome, {{ app.user.name }}</span>
+                        <a class="nav-link px-3 text-white" href="{{ path('app_profile') }}">
+                            <i class="bi bi-person-circle me-1"></i> {{ app.user.name }}
+                        </a>
                         <a class="nav-link px-3 text-white bg-danger" href="{{ path('app_logout') }}">Sign out</a>
                     {% endif %}
                 </div>
@@ -101,6 +137,20 @@
                                         </li>
                                     </ul>
                                 </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                {% endif %}
+
+                {% if is_granted('ROLE_ADMIN') %}
+                <nav id="sidebarAdminMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse" style="top: auto; bottom: 0; padding-top: 0; height: auto;">
+                    <div class="position-sticky pt-3 pb-3 sidebar-sticky border-top border-secondary">
+                        <ul class="nav flex-column mb-0">
+                            <li class="nav-item">
+                                <a class="nav-link {% if app.request.attributes.get('_route') == 'app_admin_dashboard' %}active{% endif %} text-warning" href="{{ path('app_admin_dashboard') }}">
+                                    <i class="bi bi-shield-lock-fill me-2"></i> Admin Panel
+                                </a>
                             </li>
                         </ul>
                     </div>

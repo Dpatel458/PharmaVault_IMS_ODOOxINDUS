@@ -1,26 +1,43 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}New Location{% endblock %}
+
 {% block body %}
-    <div class="pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Add New Master Location</h1>
-        <p class="text-muted">Register a city or area (e.g. Ahmedabad, Mumbai)</p>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <div>
+            <h1 class="h2"><i class="bi bi-geo-alt-fill text-primary me-2"></i>Add New Master Location</h1>
+            <p class="text-muted mb-0">Register a city or area (e.g. Ahmedabad, Mumbai)</p>
+        </div>
+        <a href="{{ path('app_location_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
     </div>
 
-    <div class="card shadow-sm mb-4" style="max-width: 500px;">
-        <div class="card-body">
-            {{ form_start(form) }}
-                <div class="mb-3">
-                    {{ form_row(form.name) }}
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-info-circle text-secondary me-2"></i>Location Details</h5>
                 </div>
-                <div class="mb-3">
-                    {{ form_row(form.shortCode) }}
+                <div class="card-body p-4">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        
+                        <div class="mb-3">
+                            {{ form_row(form.name) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.shortCode) }}
+                        </div>
+
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary px-4 bg-gradient">
+                                <i class="bi bi-save me-1"></i> Save Location
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
                 </div>
-                
-                <div class="mt-4">
-                    <button class="btn btn-primary px-4">Save City</button>
-                    <a href="{{ path('app_location_index') }}" class="btn btn-light ms-2">Back</a>
-                </div>
-            {{ form_end(form) }}
+            </div>
         </div>
     </div>
 {% endblock %}

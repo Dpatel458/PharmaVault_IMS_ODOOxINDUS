@@ -3,31 +3,61 @@
 {% block title %}Register{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white text-center">
-                    <h4>Register a new Account</h4>
-                </div>
-                <div class="card-body">
-                    {{ form_start(registrationForm) }}
-                        {{ form_row(registrationForm.name) }}
-                        {{ form_row(registrationForm.email) }}
-                        {{ form_row(registrationForm.plainPassword, {
-                            label: 'Password'
-                        }) }}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="w-100" style="max-width: 500px;">
+        <div class="text-center mb-4">
+            <i class="bi bi-person-plus display-3 text-success"></i>
+            <h1 class="h3 mt-3 mb-1 font-weight-normal">Create an Account</h1>
+            <p class="text-muted">Join the IMS platform today</p>
+        </div>
 
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-lg btn-success">Register</button>
+        <div class="card shadow border-0 p-4" style="border-radius: 1rem;">
+            <div class="card-body">
+                {{ form_start(registrationForm, {'attr': {'class': 'needs-validation'}}) }}
+                    
+                    <div class="mb-4">
+                        {{ form_label(registrationForm.name, 'Full Name', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person"></i></span>
+                            {% set nameVars = registrationForm.name.vars|merge({'attr': registrationForm.name.vars.attr|merge({'class': 'form-control border-start-0 ps-0', 'placeholder': 'John Doe'})}) %}
+                            {{ form_widget(registrationForm.name, nameVars) }}
                         </div>
-                    {{ form_end(registrationForm) }}
+                        <div class="form-text text-danger">{{ form_errors(registrationForm.name) }}</div>
+                    </div>
 
-                    <div class="mt-3 text-center">
-                            <a href="{{ path('app_login') }}">Already have an account? Login here.</a>
+                    <div class="mb-4">
+                        {{ form_label(registrationForm.email, 'Email Address', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                            {% set emailVars = registrationForm.email.vars|merge({'attr': registrationForm.email.vars.attr|merge({'class': 'form-control border-start-0 ps-0', 'placeholder': 'name@example.com'})}) %}
+                            {{ form_widget(registrationForm.email, emailVars) }}
                         </div>
-                </div>
+                        <div class="form-text text-danger">{{ form_errors(registrationForm.email) }}</div>
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form_label(registrationForm.plainPassword, 'Password', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock"></i></span>
+                            {% set pwVars = registrationForm.plainPassword.vars|merge({'attr': registrationForm.plainPassword.vars.attr|merge({'class': 'form-control border-start-0 ps-0', 'placeholder': '••••••••'})}) %}
+                            {{ form_widget(registrationForm.plainPassword, pwVars) }}
+                        </div>
+                        <div class="form-text text-muted small mt-1">Make sure it's at least 6 characters.</div>
+                        <div class="form-text text-danger">{{ form_errors(registrationForm.plainPassword) }}</div>
+                    </div>
+
+                    <div class="d-grid mt-5">
+                        <button type="submit" class="btn btn-lg btn-success bg-gradient py-2 rounded-pill shadow-sm">
+                            <i class="bi bi-person-plus-fill me-2"></i> Create Account
+                        </button>
+                    </div>
+                    
+                {{ form_end(registrationForm) }}
             </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <p class="text-muted">Already have an account? <a href="{{ path('app_login') }}" class="text-decoration-none fw-bold">Sign in</a></p>
         </div>
     </div>
 </div>

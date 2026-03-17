@@ -289,6 +289,26 @@ class InventoryController extends AbstractController
         return $this->redirectToRoute('app_transfer_show', ['id' => $transfer->getId()]);
     }
 
+    #[Route('/api/stock/current', name: 'api_stock_current', methods: ['GET'])]
+    public function getCurrentStock(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $warehouseId = $request->query->get('warehouse_id');
+        $productId = $request->query->get('product_id');
+
+        if (!$warehouseId || !$productId) {
+            return $this->json(['quantity' => 0], 400);
+        }
+
+        $stock = $entityManager->getRepository(\App\Entity\Stock::class)->findOneBy([
+            'warehouse' => $warehouseId,
+            'product' => $productId
+        ]);
+
+        return $this->json([
+            'quantity' => $stock ? $stock->getQuantity() : 0
+        ]);
+    }
+
     #[Route('/adjustments', name: 'app_adjustment_index', methods: ['GET'])]
     public function adjustmentIndex(EntityManagerInterface $entityManager): Response
     {

@@ -1,90 +1,154 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Delivery Order #{{ delivery.id }}{% endblock %}
+{% block title %}Delivery #DLV-{{ "%04d"|format(delivery.id) }}{% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Delivery Order #{{ delivery.id }}</h1>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
         <div>
-            {% if delivery.status == 'draft' %}
-                <form action="{{ path('app_delivery_validate', {'id': delivery.id}) }}" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to validate this delivery? This will deduct stock from the warehouse.');">Validate Delivery</button>
-                </form>
-            {% else %}
-                <span class="badge bg-success fs-5">Validated</span>
-            {% endif %}
-            <a href="{{ path('app_delivery_index') }}" class="btn btn-secondary ms-2">Back</a>
+            <h1 class="h2"><i class="bi bi-box-arrow-up-right text-primary me-2"></i>Delivery Details</h1>
+            <p class="text-muted mb-0">Record of outgoing inventory</p>
+        </div>
+        <div>
+            <a href="{{ path('app_delivery_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Deliveries
+            </a>
+            <button type="button" class="btn btn-outline-primary ms-2" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Print
+            </button>
         </div>
     </div>
 
     {% for message in app.flashes('success') %}
-        <div class="alert alert-success">{{ message }}</div>
+        <div class="alert alert-success rounded-3 shadow-sm border-0 border-start border-success border-4"><i class="bi bi-check-circle-fill me-2"></i> {{ message }}</div>
     {% endfor %}
     {% for message in app.flashes('danger') %}
-        <div class="alert alert-danger">{{ message }}</div>
+        <div class="alert alert-danger rounded-3 shadow-sm border-0 border-start border-danger border-4"><i class="bi bi-exclamation-triangle-fill me-2"></i> {{ message }}</div>
     {% endfor %}
 
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light"><strong>Details</strong></div>
-                <div class="card-body">
-                    <p><strong>Customer:</strong> {{ delivery.customer }}</p>
-                    <p><strong>Date:</strong> {{ delivery.createdAt|date('Y-m-d H:i') }}</p>
-                    <p><strong>Status:</strong> {{ delivery.status|capitalize }}</p>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Main Document Card -->
+            <div class="card shadow border-0 mb-5" style="border-radius: 1rem; overflow: hidden;">
+                <!-- Header Ribbon -->
+                <div class="bg-light border-bottom p-4 d-flex justify-content-between align-items-end">
+                    <div>
+                        <h2 class="mb-1 text-dark" style="font-weight: 800; letter-spacing: -0.5px;">#DLV-{{ "%04d"|format(delivery.id) }}</h2>
+                        <span class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ delivery.createdAt|date('F j, Y \\a\\t g:i A') }}</span>
+                    </div>
+                    <div>
+                        {% if delivery.status == 'draft' %}
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fs-6 shadow-sm"><i class="bi bi-pencil me-1"></i> Draft</span>
+                        {% else %}
+                            <span class="badge bg-success px-3 py-2 rounded-pill fs-6 shadow-sm"><i class="bi bi-check2-all me-1"></i> Validated</span>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <div class="col-md-8 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <strong>Items to Deliver</strong>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Product</th>
-                                <th>SKU</th>
-                                <th>Quantity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in delivery.items %}
+
+                <!-- Info Grid -->
+                <div class="card-body p-4 p-md-5">
+                    <div class="row mb-5">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">To Customer</h6>
+                            <div class="p-3 bg-light rounded-3 d-inline-block min-w-50 w-100 border">
+                                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-person-badge me-2 text-primary"></i>{{ delivery.customer|default('Unknown Customer') }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Document Type</h6>
+                            <h5 class="mb-0 text-primary fw-bold">Outgoing Delivery Order</h5>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <h6 class="text-muted text-uppercase fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Delivery Items</h6>
+                    <div class="table-responsive bg-white border rounded-3 mb-4">
+                        <table class="table table-hover table-borderless align-middle mb-0">
+                            <thead class="table-light border-bottom">
                                 <tr>
-                                    <td>{{ item.product.name }}</td>
-                                    <td><span class="badge bg-secondary">{{ item.product.sku }}</span></td>
-                                    <td>{{ item.quantity }} {{ item.product.unit }}</td>
+                                    <th class="py-3 ps-4" style="width: 50%;">Product Details</th>
+                                    <th class="py-3 text-center">SKU</th>
+                                    <th class="py-3 text-end pe-4">Quantity to Deliver</th>
                                 </tr>
-                            {% else %}
+                            </thead>
+                            <tbody>
+                                {% set totalQty = 0 %}
+                                {% for item in delivery.items %}
+                                    {% set totalQty = totalQty + item.quantity %}
+                                    <tr class="border-bottom">
+                                        <td class="py-3 ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-light rounded p-2 me-3 text-center border" style="width: 48px; height: 48px;">
+                                                    <i class="bi bi-box-seam fs-4 text-secondary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold">{{ item.product.name }}</h6>
+                                                    <small class="text-muted">{{ item.product.category.name|default('Uncategorized') }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 text-center">
+                                            <span class="badge bg-secondary rounded-pill px-3">{{ item.product.sku }}</span>
+                                        </td>
+                                        <td class="py-3 text-end pe-4">
+                                            <span class="fs-5 fw-bold">{{ item.quantity }}</span> <span class="text-muted">{{ item.product.unit }}</span>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-5 text-muted">
+                                            <i class="bi bi-box display-4 d-block mb-3 opacity-25"></i>
+                                            No items have been added to this delivery yet.
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            {% if delivery.items|length > 0 %}
+                            <tfoot class="table-light border-top">
                                 <tr>
-                                    <td colspan="3" class="text-center py-3 text-muted">No items added yet.</td>
+                                    <td colspan="2" class="py-3 ps-4 text-end fw-bold">Total Items to Deliver:</td>
+                                    <td class="py-3 text-end pe-4 fw-bold fs-5 text-primary">{{ totalQty }}</td>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </tfoot>
+                            {% endif %}
+                        </table>
+                    </div>
+
+                    <!-- Action Area -->
+                    {% if delivery.status == 'draft' %}
+                        <div class="bg-light p-4 rounded-3 border">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle-dotted text-primary me-2"></i>Add New Item</h6>
+                            <form action="{{ path('app_delivery_add_item', {'id': delivery.id}) }}" method="POST" class="row g-2 align-items-center">
+                                <div class="col-md-7">
+                                    <select name="product_id" class="form-select form-select-lg" required>
+                                        <option value="">Select a product to deliver...</option>
+                                        {% for product in products %}
+                                            <option value="{{ product.id }}">{{ product.sku }} - {{ product.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="input-group input-group-lg">
+                                        <input type="number" name="quantity" class="form-control" placeholder="Qty" min="1" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg"></i> Add</button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
                 
+                <!-- Bottom Action Footer -->
                 {% if delivery.status == 'draft' %}
-                <div class="card-footer bg-white">
-                    <form action="{{ path('app_delivery_add_item', {'id': delivery.id}) }}" method="POST" class="row g-2 align-items-center">
-                        <div class="col-auto flex-grow-1">
-                            <select name="product_id" class="form-select w-100" required>
-                                <option value="">Select a product...</option>
-                                {% for product in products %}
-                                    <option value="{{ product.id }}">{{ product.sku }} - {{ product.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-auto">
-                            <input type="number" name="quantity" class="form-control" placeholder="Qty" min="1" required style="width: 100px;">
-                        </div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-primary">Add Row</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="card-footer bg-white border-top p-4 d-flex justify-content-end align-items-center">
+                        <span class="text-muted me-3 small"><i class="bi bi-info-circle me-1"></i> Validating will permanently deduct stock from the warehouse.</span>
+                        <form action="{{ path('app_delivery_validate', {'id': delivery.id}) }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-success btn-lg px-5 bg-gradient shadow-sm rounded-pill" onclick="return confirm('Are you sure you want to validate this delivery? This action cannot be undone and will deduct stock.');">
+                                <i class="bi bi-check-circle me-2"></i> Validate Delivery
+                            </button>
+                        </form>
+                    </div>
                 {% endif %}
             </div>
         </div>

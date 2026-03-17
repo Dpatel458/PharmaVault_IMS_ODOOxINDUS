@@ -1,0 +1,95 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <h1 class="h2"><i class="bi bi-person-circle text-primary me-2"></i>My Profile</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center shadow" style="width: 120px; height: 120px; font-size: 3rem;">
+                        {{ app.user.name|slice(0, 1)|upper }}
+                    </div>
+                </div>
+                <h4 class="mb-1">{{ app.user.name }}</h4>
+                <p class="text-muted mb-3">{{ app.user.email }}</p>
+                
+                <div class="d-flex justify-content-center mb-2">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <span class="badge bg-danger rounded-pill px-3 py-2"><i class="bi bi-shield-lock me-1"></i> Administrator</span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill px-3 py-2"><i class="bi bi-person me-1"></i> User</span>
+                    {% endif %}
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="text-start">
+                    <div class="mb-2"><strong>Member since:</strong></div>
+                    <div class="text-muted"><i class="bi bi-calendar-event me-2"></i>{{ app.user.createdAt|date('F j, Y') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-pencil-square text-secondary me-2"></i>Edit Profile Details</h5>
+            </div>
+            <div class="card-body p-4">
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+
+                {{ form_start(profileForm, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            {{ form_label(profileForm.name, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(profileForm.name) }}
+                            <div class="form-text text-danger">{{ form_errors(profileForm.name) }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(profileForm.email, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(profileForm.email) }}
+                            <div class="form-text text-danger">{{ form_errors(profileForm.email) }}</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h6 class="mb-3 text-muted">Change Password <small>(Optional)</small></h6>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            {{ form_label(profileForm.plainPassword.first, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(profileForm.plainPassword.first) }}
+                            <div class="form-text text-danger">{{ form_errors(profileForm.plainPassword.first) }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(profileForm.plainPassword.second, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(profileForm.plainPassword.second) }}
+                            <div class="form-text text-danger">{{ form_errors(profileForm.plainPassword.second) }}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary px-4 py-2">
+                            <i class="bi bi-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+
+                {{ form_end(profileForm) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

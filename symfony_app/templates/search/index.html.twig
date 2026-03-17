@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2"><i class="bi bi-search text-primary me-2"></i>Search Results</h1>
+        {% if query %}
+            <p class="text-muted mb-0 mt-2">Showing results for: <strong>"{{ query }}"</strong></p>
+        {% endif %}
+    </div>
+
+    {% if not query %}
+        <div class="alert alert-info rounded-3 shadow-sm">
+            <i class="bi bi-info-circle-fill me-2"></i> Please enter a search term in the top search bar to begin exploring your inventory data.
+        </div>
+    {% else %}
+        {% set totalResults = results.products|length + results.categories|length + results.warehouses|length + results.locations|length %}
+        
+        {% if totalResults == 0 %}
+            <div class="text-center py-5">
+                <i class="bi bi-emoji-frown display-1 text-muted mb-3 opacity-50"></i>
+                <h3 class="text-muted">No results found</h3>
+                <p class="text-secondary">We couldn't find anything matching "{{ query }}". Try checking for typos or using different keywords.</p>
+            </div>
+        {% else %}
+            <div class="row">
+                {# Products Section #}
+                {% if results.products|length > 0 %}
+                    <div class="col-12 mb-4">
+                        <div class="card shadow-sm border-0 border-top border-primary border-4">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-box-seam text-primary me-2"></i>Products ({{ results.products|length }})</h5>
+                                <a href="{{ path('app_product_index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                {% for product in results.products %}
+                                    <a href="{{ path('app_product_show', {'id': product.id}) }}" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">{{ product.name }}</h6>
+                                            <small class="text-muted">SKU: <span class="badge bg-secondary">{{ product.sku }}</span> | Category: {{ product.category.name }}</small>
+                                        </div>
+                                        <i class="bi bi-chevron-right text-muted"></i>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Categories Section #}
+                {% if results.categories|length > 0 %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm border-0 border-top border-success border-4 h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-folder text-success me-2"></i>Categories ({{ results.categories|length }})</h5>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                {% for category in results.categories %}
+                                    <a href="{{ path('app_category_show', {'id': category.id}) }}" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold">{{ category.name }}</span>
+                                        <i class="bi bi-chevron-right text-muted"></i>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Warehouses Section #}
+                {% if results.warehouses|length > 0 %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm border-0 border-top border-info border-4 h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-building text-info me-2"></i>Warehouses ({{ results.warehouses|length }})</h5>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                {% for warehouse in results.warehouses %}
+                                    <a href="{{ path('app_warehouse_show', {'id': warehouse.id}) }}" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold">{{ warehouse.name }}</span>
+                                        <i class="bi bi-chevron-right text-muted"></i>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Locations Section #}
+                {% if results.locations|length > 0 %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm border-0 border-top border-warning border-4 h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-geo-alt text-warning me-2"></i>Locations ({{ results.locations|length }})</h5>
+                            </div>
+                            <div class="list-group list-group-flush">
+                                {% for location in results.locations %}
+                                    <a href="{{ path('app_location_show', {'id': location.id}) }}" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fw-bold d-block">{{ location.name }}</span>
+                                            <small class="text-muted">Code: <span class="badge bg-light text-dark border">{{ location.shortCode }}</span></small>
+                                        </div>
+                                        <i class="bi bi-chevron-right text-muted"></i>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}

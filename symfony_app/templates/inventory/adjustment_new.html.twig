@@ -38,6 +38,11 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label text-muted">Current Quantity (Auto-fetched)</label>
+                    <input type="text" class="form-control bg-light" id="current_quantity" disabled value="Select warehouse and product...">
+                </div>
+
+                <div class="mb-3">
                     <label for="new_quantity" class="form-label">Physical Quantity (New Quantity)</label>
                     <input type="number" class="form-control" id="new_quantity" name="new_quantity" min="0" required>
                     <div class="form-text">Enter the absolute physical quantity counted in the warehouse.</div>
@@ -54,4 +59,35 @@
     </div>
     
     <a href="{{ path('app_adjustment_index') }}" class="btn btn-secondary">Back to Adjustments</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const warehouseSelect = document.getElementById('warehouse_id');
+            const productSelect = document.getElementById('product_id');
+            const currentQuantityInput = document.getElementById('current_quantity');
+
+            function fetchCurrentStock() {
+                const warehouseId = warehouseSelect.value;
+                const productId = productSelect.value;
+
+                if (warehouseId && productId) {
+                    currentQuantityInput.value = 'Loading...';
+                    fetch(`/inventory/api/stock/current?warehouse_id=${warehouseId}&product_id=${productId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            currentQuantityInput.value = data.quantity;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching stock:', error);
+                            currentQuantityInput.value = 'Failed to load';
+                        });
+                } else {
+                    currentQuantityInput.value = 'Select warehouse and product...';
+                }
+            }
+
+            warehouseSelect.addEventListener('change', fetchCurrentStock);
+            productSelect.addEventListener('change', fetchCurrentStock);
+        });
+    </script>
 {% endblock %}

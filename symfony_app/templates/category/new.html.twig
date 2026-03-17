@@ -3,18 +3,36 @@
 {% block title %}New Category{% endblock %}
 
 {% block body %}
-    <div class="pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Create new Category</h1>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2"><i class="bi bi-folder-fill text-primary me-2"></i>Create New Category</h1>
+        <a href="{{ path('app_category_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            {{ form_start(form) }}
-                {{ form_widget(form) }}
-                <button class="btn btn-success mt-3">Save</button>
-            {{ form_end(form) }}
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-info-circle text-secondary me-2"></i>Category Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        
+                        <div class="mb-4">
+                            {{ form_row(form.name) }}
+                            <div class="form-text text-muted">Enter a unique and descriptive name for this category.</div>
+                        </div>
+
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-success px-4 bg-gradient">
+                                <i class="bi bi-save me-1"></i> Save Category
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
         </div>
     </div>
-
-    <a href="{{ path('app_category_index') }}" class="btn btn-secondary">back to list</a>
 {% endblock %}
