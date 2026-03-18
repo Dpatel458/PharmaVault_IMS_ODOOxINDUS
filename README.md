@@ -89,10 +89,10 @@ Here’s a glimpse of PharmaVault IMS in action:
 
 This project was built with dedication and collaboration by:
 
-* 👑 **Dhruv Patel** *(Team Leader)*
-* 💡 **Ishan Kalal**
-* ⚙️ **Smit Bambroliya**
-* 🔥 **Prince Dixit**
+* **Dhruv Patel** *(Team Leader)*
+* **Ishan Kalal**
+* **Smit Bambroliya**
+* **Prince Dixit**
 
 ---
 
